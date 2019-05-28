@@ -6,15 +6,22 @@ from django.http import HttpResponse
 from time import time
 from django.utils.text import slugify
 from django.shortcuts import redirect
-from django.views.generic.edit import FormView
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseRedirect, HttpResponse
+from django.contrib.auth import authenticate, login, logout
+from django.urls import reverse
+from django.views.generic import View
 
 def gen_slug(s):
     new_slug = slugify(s, allow_unicode=True)
     return new_slug + '-' + str(int(time()))
 
 def index(request):
-    return render(request, 'meeting/index.html')
+    if request.user.is_authenticated:
+        meetings = Meeting.objects.all()
+        return render(request, 'meeting/index.html', context={'meetings':meetings})
+    else:
+        return redirect('login')
 
 def create(request):
     form_model_date = MeetingDateForm
@@ -44,20 +51,43 @@ def voteDetail(request, slug):
     return render(request, 'meeting/vote_detail.html', context={'vote':vote, 'dates': dates})
 
 
-class RegisterFormView(FormView):
-    form_class = UserCreationForm
+def user_logout(request):
+    logout(request)
+    return HttpResponseRedirect(reverse('login'))
+def user_login(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(username=username, password=password)
+        if user:
+            if user.is_active:
+                login(request, user)
+                return HttpResponseRedirect(reverse('index_url'))
+            else:
+                return HttpResponse("Your account was inactive.")
+        else:
+            print("Someone tried to login and failed.")
+            print("They used username: {} and password: {}".format(username, password))
+            return HttpResponse("Invalid login details given")
+    else:
+        return render(request, 'meeting/login.html', {})
 
-    # Ссылка, на которую будет перенаправляться пользователь в случае успешной регистрации.
-    # В данном случае указана ссылка на страницу входа для зарегистрированных пользователей.
-    success_url = "/login/"
 
-    # Шаблон, который будет использоваться при отображении представления.
-    template_name = "register.html"
+def register(request):
+  registered = False
+  if request.method == 'POST':
+      user_form = UserForm(data=request.POST)
 
-    def form_valid(self, form):
-        # Создаём пользователя, если данные в форму были введены корректно.
-        form.save()
+      if user_form.is_valid():
+          user = user_form.save()
+          user.set_password(user.password)
+          user.save()
+          registered = True
 
-        # Вызываем метод базового класса
-        return super(RegisterFormView, self).form_valid(form)
-
+      else:
+          print(user_form.errors)
+  else:
+      user_form = UserForm()
+  return render(request,'meeting/registration.html',
+                        {'user_form':user_form,
+                          'registered':registered})

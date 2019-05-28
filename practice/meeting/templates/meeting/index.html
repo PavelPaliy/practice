@@ -3,5 +3,9 @@
     Main
 {% endblock %}
 {% block content %}
-    Main
+{% for meeting in meetings %}
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><a href = "{{ meeting.get_absolute_url }}">{{ meeting.title }}</a></li>
+        </ul>
+    {% endfor %}
 {% endblock %}

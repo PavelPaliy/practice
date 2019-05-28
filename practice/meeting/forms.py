@@ -3,10 +3,10 @@ from .models import *
 from .widgets import *
 from django.contrib.auth.models import User
 class MeetingForm(forms.ModelForm):
+    description = forms.CharField(widget=forms.Textarea(attrs={'rows': 5, 'cols': 100}))
     class Meta:
         model = Meeting
         fields = ['title', 'description']
-
 class MeetingDateForm(forms.ModelForm):
     class Meta:
         model = MeetingDate
@@ -28,7 +28,3 @@ class UserForm(forms.ModelForm):
     class Meta():
         model = User
         fields = ('username','password','email')
-class UserProfileInfoForm(forms.ModelForm):
-     class Meta():
-         model = UserProfileInfo
-         fields = ('portfolio_site','profile_pic')

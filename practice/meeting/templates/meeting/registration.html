@@ -1,0 +1,44 @@
+<html>
+<head>
+    <title>
+        Registration
+    </title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+</head>
+<body>
+<div class="container">
+    <div class="jumbotron">
+      {% if registered %}
+        <h1>Thank you for registering!</h1>
+        <a href = "{% url 'index_url' %}">On main</a>
+      {% else %}
+        <h1>Register Here</h1>
+        <h3>Just fill out the form.</h3>
+<form enctype="multipart/form-data" method="POST">
+          {% csrf_token %}
+    {% for field in user_form  %}
+        <div class="form-group">
+          {{ field.label }}
+            {{ field }}
+        </div>
+    {%  endfor %}
+
+          <input type="submit" name="" value="Register" class="btn btn-primary">
+        </form>
+
+      {% endif %}
+    </div>
+  </div>
+<script>
+    var inputs = document.getElementsByTagName('input');
+    for(i =0; i<inputs.length; i++)
+    {
+        if(inputs[i].type == "text" || inputs[i].type == "password" || inputs[i].type == 'email')
+        {
+            inputs[i].className = 'form-control';
+        }
+    }
+</script>
+
+</body>
